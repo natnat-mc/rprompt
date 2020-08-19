@@ -1,0 +1,13 @@
+[package]
+name = "rprompt"
+version = "0.1.0"
+authors = ["Nathan DECHER <nathan.decher@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+terminfo = "0.7.3"
+rlua = "0.17.0"
+git2 = "0.13.8"
+hostname = "0.3.0"
