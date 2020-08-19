@@ -1,4 +1,36 @@
-package.preload['main'] = function()
+package.preload['venv'] = function()
+local chunk, err = load([=====[local getenv
+getenv = os.getenv
+local open
+open = io.open
+local getvenvpath
+getvenvpath = function()
+  return getenv('VIRTUAL_ENV')
+end
+local getvenvversion
+getvenvversion = function()
+  local fd = open(tostring(getvenvpath()) .. "/pyvenv.cfg", 'r')
+  if not (fd) then
+    return 
+  end
+  for line in fd:lines() do
+    do
+      local version = line:match('version%s*=%s*(.+)')
+      if version then
+        return version
+      end
+    end
+  end
+end
+return {
+  getvenvpath = getvenvpath,
+  getvenvversion = getvenvversion
+}
+]=====], 'src/lua/venv.lua', 't')
+if err then error(err) end
+return chunk()
+end
+package.preload['blocks'] = function()
 local chunk, err = load([=====[local insert, concat
 do
   local _obj_0 = table
@@ -38,7 +70,28 @@ endline = function()
   end
   blocks = { }
 end
-local shrtpath
+local flush
+flush = function()
+  if #blocks then
+    endline()
+  end
+  insert(output, ' ')
+  if has256color then
+    insert(output, tostring(esc) .. "[0m")
+  end
+  return io.write(concat(output, ''))
+end
+return {
+  addblock = addblock,
+  endline = endline,
+  flush = flush
+}
+]=====], 'src/lua/blocks.lua', 't')
+if err then error(err) end
+return chunk()
+end
+package.preload['util'] = function()
+local chunk, err = load([=====[local shrtpath
 shrtpath = function(p)
   local home
   home = paths.home
@@ -52,6 +105,28 @@ shrtpath = function(p)
     end
   end
   return p
+end
+return {
+  shrtpath = shrtpath
+}
+]=====], 'src/lua/util.lua', 't')
+if err then error(err) end
+return chunk()
+end
+package.preload['main'] = function()
+local chunk, err = load([=====[local getenv
+getenv = os.getenv
+local addblock, endline, flush
+do
+  local _obj_0 = require('blocks')
+  addblock, endline, flush = _obj_0.addblock, _obj_0.endline, _obj_0.flush
+end
+local shrtpath
+shrtpath = require('util').shrtpath
+local getvenvpath, getvenvversion
+do
+  local _obj_0 = require('venv')
+  getvenvpath, getvenvversion = _obj_0.getvenvpath, _obj_0.getvenvversion
 end
 do
   local status = getenv('STATUS')
@@ -85,6 +160,23 @@ do
     })
   end
 end
+do
+  local venv = getvenvpath()
+  if venv then
+    endline()
+    addblock((shrtpath(venv)), {
+      color = '129'
+    })
+    do
+      local version = getvenvversion()
+      if version then
+        addblock(version, {
+          color = '128'
+        })
+      end
+    end
+  end
+end
 if git then
   endline()
   if git.changes == 0 then
@@ -114,12 +206,7 @@ end
 addblock('~>', {
   color = '201'
 })
-endline()
-insert(output, ' ')
-if has256color then
-  insert(output, tostring(esc) .. "[0m")
-end
-return io.write(concat(output, ''))
+return flush()
 ]=====], 'src/lua/main.lua', 't')
 if err then error(err) end
 return chunk()

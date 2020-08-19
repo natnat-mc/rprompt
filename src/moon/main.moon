@@ -1,40 +1,7 @@
-import insert, concat from table
 import getenv from os
-import char from string
-
-blocks = {}
-output = {}
-linesent = false
-
-addblock = (text, data={}) ->
-	data.text = text
-	insert blocks, data
-
-has256color = terminfo and terminfo.maxcolors==256 and not getenv 'NOCOLOR'
-esc = char 0x1b
-
-endline = ->
-	if linesent
-		insert output, '\n'
-	linesent = true
-	for i, block in ipairs blocks
-		if i!=1
-			insert output, ' '
-		if has256color and block.color
-			insert output, "#{esc}[38;5;#{block.color}m"
-		insert output, block.text
-	blocks = {}
-
-shrtpath = (p) ->
-	import home from paths
-	if home
-		if p==home
-			return '~'
-		len = #home
-		if (p\sub 1, len)==home and (p\sub len+1, len+1)=='/'
-			return '~'..p\sub len+1
-	p
-
+import addblock, endline, flush from require 'blocks'
+import shrtpath from require 'util'
+import getvenvpath, getvenvversion from require 'venv'
 
 do
 	status = getenv 'STATUS'
@@ -51,6 +18,12 @@ do
 	if paths.cwd
 		addblock (shrtpath paths.cwd), color: '091'
 
+if venv = getvenvpath!
+	endline!
+	addblock (shrtpath venv), color: '129'
+	if version = getvenvversion!
+		addblock version, color: '128'
+
 if git
 	endline!
 	if git.changes==0
@@ -65,8 +38,4 @@ if git
 		addblock git.branch or '[no branch]', color: '163'
 
 addblock '~>', color: '201'
-endline!
-insert output, ' '
-if has256color
-	insert output, "#{esc}[0m"
-io.write concat output, ''
+flush!
