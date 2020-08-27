@@ -14,6 +14,11 @@ do
 end
 do
   local status = getenv('STATUS')
+  local defaultshell = getenv('SHELL')
+  if defaultshell then
+    defaultshell = defaultshell:match('/([^/]+)$')
+  end
+  local currentshell = getenv('CURRENTSHELL')
   if status == '0' then
     addblock('0', {
       color = '046'
@@ -21,6 +26,11 @@ do
   elseif status then
     addblock(status, {
       color = '196'
+    })
+  end
+  if currentshell and currentshell ~= defaultshell then
+    addblock(currentshell, {
+      color = '069'
     })
   end
   if host.time then

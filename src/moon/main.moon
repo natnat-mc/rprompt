@@ -5,10 +5,16 @@ import getvenvpath, getvenvversion from require 'venv'
 
 do
 	status = getenv 'STATUS'
+	defaultshell = getenv 'SHELL'
+	defaultshell = defaultshell\match '/([^/]+)$' if defaultshell
+	currentshell = getenv 'CURRENTSHELL'
+
 	if status=='0'
 		addblock '0', color: '046'
 	elseif status
 		addblock status, color: '196'
+	if currentshell and currentshell!=defaultshell
+		addblock currentshell, color: '069'
 	if host.time
 		addblock host.time, color: '088'
 	if host.username

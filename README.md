@@ -9,13 +9,13 @@ A smol prompt in rust + moonscript
 ## What does it do?
 - tell you who you are and what machine you're on
 - tell you what happened (last command status)
+- tell you which shell you're currently using, if it's not your `$SHELL`
 - tell you where you are (current directory)
 - tell you what you are doing (git repo, branch and local copy status)
 - tell you what venv you're using (venv root and python version)
 - color itself if terminal supports 256color
 
 ## What to add next?
-- which shell you're currently using, if it's not your `$SHELL`
 - `nvm`, `luaver` and similar envs
 - command execution time
 - possibility to enable or disable features at moonscript compile time
