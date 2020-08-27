@@ -15,6 +15,10 @@ do
 		addblock status, color: '196'
 	if currentshell and currentshell!=defaultshell
 		addblock currentshell, color: '069'
+	if getenv 'STY'
+		addblock 'screen', color: '068'
+	if getenv 'TMUX'
+		addblock 'tmux', color: '067'
 	if host.time
 		addblock host.time, color: '088'
 	if host.username

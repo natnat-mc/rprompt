@@ -11,6 +11,7 @@ addblock = (text, data={}) ->
 	insert blocks, data
 
 has256color = terminfo and terminfo.maxcolors==256 and not getenv 'NOCOLOR'
+currentshell = getenv 'CURRENTSHELL'
 esc = char 0x1b
 
 endline = ->
@@ -21,7 +22,12 @@ endline = ->
 		if i!=1
 			insert output, ' '
 		if has256color and block.color
-			insert output, "#{esc}[38;5;#{block.color}m"
+			if currentshell=='bash'
+				insert output, "\\[#{esc}[38;5;#{block.color}m\\]"
+			elseif currentshell=='zsh'
+				insert output, "%F{#{block.color}}"
+			else
+				insert output, "#{esc}[38;5;#{block.color}m"
 		insert output, block.text
 	blocks = {}
 
@@ -30,7 +36,12 @@ flush = ->
 		endline!
 	insert output, ' '
 	if has256color
-		insert output, "#{esc}[0m"
+		if currentshell=='bash'
+			insert output, "\\[#{esc}[0m\\]"
+		elseif currentshell=='zsh'
+			insert output, "%f"
+		else
+			insert output, "#{esc}[0m"
 	io.write concat output, ''
 
 { :addblock, :endline, :flush }

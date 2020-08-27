@@ -10,7 +10,7 @@ A smol prompt in rust + moonscript
 - tell you who you are and what machine you're on
 - tell you what happened (last command status)
 - tell you which shell you're currently using, if it's not your `$SHELL`
-- tell you where you are (current directory)
+- tell you where you are (current directory, and whether or not you're in screen and tmux)
 - tell you what you are doing (git repo, branch and local copy status)
 - tell you what venv you're using (venv root and python version)
 - color itself if terminal supports 256color

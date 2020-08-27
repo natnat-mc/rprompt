@@ -33,6 +33,16 @@ do
       color = '069'
     })
   end
+  if getenv('STY') then
+    addblock('screen', {
+      color = '068'
+    })
+  end
+  if getenv('TMUX') then
+    addblock('tmux', {
+      color = '067'
+    })
+  end
   if host.time then
     addblock(host.time, {
       color = '088'

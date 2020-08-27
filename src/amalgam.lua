@@ -52,6 +52,7 @@ addblock = function(text, data)
   return insert(blocks, data)
 end
 local has256color = terminfo and terminfo.maxcolors == 256 and not getenv('NOCOLOR')
+local currentshell = getenv('CURRENTSHELL')
 local esc = char(0x1b)
 local endline
 endline = function()
@@ -64,7 +65,13 @@ endline = function()
       insert(output, ' ')
     end
     if has256color and block.color then
-      insert(output, tostring(esc) .. "[38;5;" .. tostring(block.color) .. "m")
+      if currentshell == 'bash' then
+        insert(output, "\\[" .. tostring(esc) .. "[38;5;" .. tostring(block.color) .. "m\\]")
+      elseif currentshell == 'zsh' then
+        insert(output, "%F{" .. tostring(block.color) .. "}")
+      else
+        insert(output, tostring(esc) .. "[38;5;" .. tostring(block.color) .. "m")
+      end
     end
     insert(output, block.text)
   end
@@ -77,7 +84,13 @@ flush = function()
   end
   insert(output, ' ')
   if has256color then
-    insert(output, tostring(esc) .. "[0m")
+    if currentshell == 'bash' then
+      insert(output, "\\[" .. tostring(esc) .. "[0m\\]")
+    elseif currentshell == 'zsh' then
+      insert(output, "%f")
+    else
+      insert(output, tostring(esc) .. "[0m")
+    end
   end
   return io.write(concat(output, ''))
 end
@@ -147,6 +160,16 @@ do
   if currentshell and currentshell ~= defaultshell then
     addblock(currentshell, {
       color = '069'
+    })
+  end
+  if getenv('STY') then
+    addblock('screen', {
+      color = '068'
+    })
+  end
+  if getenv('TMUX') then
+    addblock('tmux', {
+      color = '067'
     })
   end
   if host.time then
