@@ -43,6 +43,19 @@ do
       color = '067'
     })
   end
+  if getenv('NVIM_LISTEN_ADDRESS') then
+    addblock('nvim', {
+      color = '066'
+    })
+    do
+      local root = getenv('NVIM_ROOT')
+      if root then
+        addblock("[" .. tostring(root:sub(2)) .. "]", {
+          color = '065'
+        })
+      end
+    end
+  end
   if host.time then
     addblock(host.time, {
       color = '088'

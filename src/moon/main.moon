@@ -19,6 +19,10 @@ do
 		addblock 'screen', color: '068'
 	if getenv 'TMUX'
 		addblock 'tmux', color: '067'
+	if getenv 'NVIM_LISTEN_ADDRESS'
+		addblock 'nvim', color: '066'
+		if root = getenv 'NVIM_ROOT'
+			addblock "[#{root\sub 2}]", color: '065'
 	if host.time
 		addblock host.time, color: '088'
 	if host.username

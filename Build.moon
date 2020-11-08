@@ -1,41 +1,44 @@
-SOURCES_MOON = wildcard 'src/moon/*.moon'
-SOURCES_LUA  = patsubst SOURCES_MOON, 'src/moon/%.moon', 'src/lua/%.lua'
-AMALGAM      = 'src/amalgam.lua'
+var 'SOURCES_RUST', _.wildcard 'src/**.rs'
+var 'SOURCES_MOON', _.wildcard 'src/moon/**.moon'
+var 'SOURCES_LUA', _.patsubst SOURCES_MOON, 'src/moon/%.moon', 'src/lua/%.lua'
+var 'AMALGAM', 'src/amalgam.lua'
 
-target 'src/lua/%.lua', in: 'src/moon/%.moon', out: 'src/lua/%.lua', fn: =>
-	-moonc '-o', @outfile, @infile
-target 'amalgam', out: AMALGAM, from: SOURCES_LUA, fn: =>
-	code = {}
-	foreach @ins, =>
-		modname = @\match('lua/(.-)%.lua')\gsub '/', '.'
-		print "adding module #{@} as #{modname}"
-		insert code, "package.preload['#{modname}'] = function()\n"
-		insert code, "local chunk, err = load([=====["
-		fd = io.open @, 'r'
-		insert code, fd\read '*a'
-		fd\close!
-		insert code, "]=====], '#{@}', 't')\n"
-		insert code, "if err then error(err) end\n"
-		insert code, "return chunk()\n"
-		insert code, "end\n"
+with public target 'debug'
+	\produces 'target/debug/rprompt'
+	\depends SOURCES_RUST, AMALGAM
+	\fn => _.cmd 'cargo', 'build'
 
-	insert code, "require 'main'\n"
+with default public target 'release'
+	\produces 'target/release/rprompt'
+	\depends SOURCES_RUST, AMALGAM
+	\fn => _.cmd 'cargo', 'build', '--release'
 
-	fd = io.open @outfile, 'w'
-	fd\write concat code, ''
-	fd\close!
+with public target 'install'
+	\after 'release'
+	\fn => _.cmd (os.getenv 'SHELL'), "install/install.#{(os.getenv 'SHELL')\match '([^/]+)$'}"
 
-public target 'debug', deps: 'amalgam', out: 'target/debug/rprompt', fn: =>
-	-cargo 'build'
-public target 'run', deps: 'amalgam', fn: =>
-	-cargo 'run'
+with public target 'clean'
+	\fn => _.cmd 'rm', '-f', SOURCES_LUA, AMALGAM
 
-public target 'release', deps: 'amalgam', out: 'target/release/rprompt', fn: =>
-	-cargo 'build', '--release'
+with target SOURCES_LUA, pattern: 'src/lua/%.lua'
+	\depends 'src/moon/%.moon'
+	\produces 'src/lua/%.lua'
+	\fn => _.moonc @infile, @outfile
 
-public target 'clean', fn: =>
-	-rm '-f', SOURCES_LUA
-	-rm '-f', AMALGAM
-
-default target 'rickroll', fn: =>
-	#sh '-c', 'curl -s -L http://bit.ly/10hA8iC | bash'
+with target AMALGAM
+	\depends SOURCES_LUA
+	\produces AMALGAM
+	\fn =>
+		code = {}
+		write = (v) -> table.insert code, v
+		_.foreach @infiles, =>
+			modname = @match('lua/(.-)%.lua')\gsub '/', '.'
+			write "package.preload['#{modname}'] = function()\n"
+			write "local chunk, err = load([=====["
+			write _.readfile @
+			write "]=====], '#{@}', 't')\n"
+			write "if err then error(err) end\n"
+			write "return chunk()\n"
+			write "end\n"
+		write "require 'main'\n"
+		_.writefile @outfile, table.concat code, ''
