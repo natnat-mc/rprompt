@@ -1,7 +1,7 @@
 [package]
 name = "rprompt"
 version = "0.1.0"
-authors = ["Nathan DECHER <nathan.decher@gmail.com>"]
+authors = ["Codinget <codinget@codi.moe>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
